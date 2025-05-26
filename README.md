@@ -11,7 +11,7 @@
 
 ## Description
 
-**Indovina Chi? Web Game** is a web implementation of the classic "Indovina Chi?" board game.  
+**Guess WHO ? Web Game** is a web implementation of the classic "Indovina Chi?" board game.  
 In this game, a secret character is chosen at random and the player must figure out which one it is by asking questions or directly selecting a character. The project is built using HTML5, CSS3, and JavaScript. It uses the Canvas API to render a dynamic 2D board that displays a grid of character cards (complete with emoticons and names), and it leverages open source libraries such as Bootstrap for responsive layout and Anime.js for smooth animations.
 
 ---

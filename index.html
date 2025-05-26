@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Indovina Chi? - Web Game</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f4f7f8;
+    }
+    /* Header styling */
+    header {
+      background: #007bff;
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+    /* Footer styling */
+    footer {
+      background: #343a40;
+      color: #fff;
+      text-align: center;
+      padding: 15px 0;
+      margin-top: 20px;
+    }
+    /* Card styling per i personaggi */
+    .character-card {
+      width: 100px;
+      margin: 5px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      text-align: center;
+      background: #fff;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .character-card:hover {
+      transform: scale(1.05);
+      border-color: #007bff;
+    }
+    .character-card.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    /* Container per la carta segreta e il tabellone */
+    #secretCardContainer {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    #board {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <h1>Indovina Chi?</h1>
+  </header>
+
+  <!-- Main container -->
+  <div class="container my-4">
+    <div class="row g-3">
+      <!-- Colonna sinistra: carta segreta e tabellone dei personaggi -->
+      <div class="col-lg-8">
+        <!-- Carta segreta (da indovinare) -->
+        <div id="secretCardContainer">
+          <div id="secretCard" class="character-card">
+            <div style="font-size: 40px;">❓</div>
+            <div>???</div>
+          </div>
+        </div>
+        <!-- Tabellone dei personaggi -->
+        <div id="board">
+          <!-- Le card verranno create dinamicamente -->
+        </div>
+      </div>
+      <!-- Colonna destra: pannello per le domande filtranti e reset -->
+      <div class="col-lg-4">
+        <!-- Scheda per le domande filtranti -->
+        <div class="card shadow mb-3">
+          <div class="card-body">
+            <h5 class="card-title text-center">Domande Filtranti</h5>
+            <div class="d-flex flex-wrap justify-content-center">
+              <button class="btn btn-outline-secondary btn-sm m-1" onclick="askQuestion('occhiali', 'Occhiali')">Occhiali?</button>
+              <button class="btn btn-outline-secondary btn-sm m-1" onclick="askQuestion('cappello', 'Cappello')">Cappello?</button>
+              <button class="btn btn-outline-secondary btn-sm m-1" onclick="askQuestion('barba', 'Barba')">Barba?</button>
+              <button class="btn btn-outline-secondary btn-sm m-1" onclick="askQuestion('capelli_lunghi', 'Capelli lunghi')">Capelli lunghi?</button>
+              <button class="btn btn-outline-secondary btn-sm m-1" onclick="askQuestion('sorridente', 'Sorridente')">Sorridente?</button>
+            </div>
+            <div class="text-center mt-2">
+              <button class="btn btn-outline-info btn-sm" onclick="clearFilters()">Reset Filtro</button>
+            </div>
+            <div id="questionResult" class="mt-2"></div>
+          </div>
+        </div>
+        <!-- Scheda per il pulsante di reset -->
+        <div class="card shadow">
+          <div class="card-body text-center">
+            <button id="resetButton" class="btn btn-primary">Resetta Gioco</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">Bocaletto Luca</div>
+  </footer>
+
+  <!-- Modal di vittoria -->
+  <div class="modal fade" id="winModal" tabindex="-1" aria-labelledby="winModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="winModalLabel">Complimenti!</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+        </div>
+        <div class="modal-body">
+          Hai indovinato il personaggio segreto!
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script: Bootstrap, Anime.js e il codice custom -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Anime.js per animazioni (usato per l'effetto sulle card) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const board = document.getElementById('board');
+      const resetButton = document.getElementById('resetButton');
+      const questionResultEl = document.getElementById('questionResult');
+
+      // Array di 18 personaggi con attributi
+      const characters = [
+        { name: "Anna",        emoji: "😊", attributes: { occhiali: false, cappello: true,  barba: false, capelli_lunghi: true,  sorridente: true } },
+        { name: "Marco",       emoji: "😎", attributes: { occhiali: true,  cappello: false, barba: true,  capelli_lunghi: false, sorridente: false } },
+        { name: "Luisa",       emoji: "😄", attributes: { occhiali: false, cappello: false, barba: false, capelli_lunghi: true,  sorridente: true } },
+        { name: "Gianni",      emoji: "🤠", attributes: { occhiali: false, cappello: true,  barba: true,  capelli_lunghi: false, sorridente: false } },
+        { name: "Sara",        emoji: "😇", attributes: { occhiali: false, cappello: false, barba: false, capelli_lunghi: true,  sorridente: true } },
+        { name: "Paolo",       emoji: "😏", attributes: { occhiali: true,  cappello: true,  barba: true,  capelli_lunghi: false, sorridente: false } },
+        { name: "Luca",        emoji: "😃", attributes: { occhiali: false, cappello: false, barba: false, capelli_lunghi: false, sorridente: true } },
+        { name: "Federica",    emoji: "🤩", attributes: { occhiali: true,  cappello: false, barba: false, capelli_lunghi: true,  sorridente: true } },
+        { name: "Roberto",     emoji: "🧐", attributes: { occhiali: true,  cappello: true,  barba: true,  capelli_lunghi: false, sorridente: false } },
+        { name: "Elisa",       emoji: "😌", attributes: { occhiali: false, cappello: false, barba: false, capelli_lunghi: false, sorridente: true } },
+        { name: "Matteo",      emoji: "😐", attributes: { occhiali: true,  cappello: true,  barba: false, capelli_lunghi: false, sorridente: false } },
+        { name: "Claudia",     emoji: "😃", attributes: { occhiali: false, cappello: true,  barba: false, capelli_lunghi: true,  sorridente: true } },
+        { name: "Giulia",      emoji: "😉", attributes: { occhiali: false, cappello: false, barba: false, capelli_lunghi: true,  sorridente: true } },
+        { name: "Stefano",     emoji: "😅", attributes: { occhiali: true,  cappello: false, barba: true,  capelli_lunghi: false, sorridente: false } },
+        { name: "Martina",     emoji: "😁", attributes: { occhiali: false, cappello: false, barba: false, capelli_lunghi: true,  sorridente: true } },
+        { name: "Alessandro",  emoji: "😃", attributes: { occhiali: true,  cappello: false, barba: true,  capelli_lunghi: false, sorridente: false } },
+        { name: "Sofia",       emoji: "😊", attributes: { occhiali: false, cappello: false, barba: false, capelli_lunghi: true,  sorridente: true } },
+        { name: "Davide",      emoji: "😏", attributes: { occhiali: true,  cappello: true,  barba: true,  capelli_lunghi: false, sorridente: false } }
+      ];
+
+      // Seleziona casualmente il personaggio segreto (il giocatore non ne conosce l'identità)
+      const secretCharacter = characters[Math.floor(Math.random() * characters.length)];
+
+      // Variabile per i filtri attivi
+      let activeFilters = {};
+
+      // Funzione per aggiornare le card in base ai filtri attivi
+      function updateCardsBasedOnFilters() {
+        document.querySelectorAll('.character-card').forEach(card => {
+          // Non modificare la secret card
+          if (card.id === 'secretCard') return;
+          let idx = card.dataset.index;
+          let character = characters[idx];
+          let matches = true;
+          for (let key in activeFilters) {
+            if (character.attributes[key] !== activeFilters[key]) {
+              matches = false;
+              break;
+            }
+          }
+          if (!matches) {
+            card.classList.add('disabled');
+          } else {
+            card.classList.remove('disabled');
+          }
+        });
+      }
+
+      // Creazione dinamica delle card del tabellone
+      characters.forEach((character, index) => {
+        const card = document.createElement('div');
+        card.className = 'character-card';
+        card.dataset.index = index;
+        card.innerHTML = `<div style="font-size: 40px;">${character.emoji}</div>
+                          <div>${character.name}</div>`;
+        board.appendChild(card);
+
+        // Al click sulla card, controlla se corrisponde al personaggio segreto
+        card.addEventListener('click', () => {
+          if (character.name === secretCharacter.name) {
+            const winModalElement = document.getElementById('winModal');
+            const winModal = new bootstrap.Modal(winModalElement);
+            winModal.show();
+            anime({
+              targets: card,
+              scale: [1, 1.2],
+              duration: 300,
+              direction: 'alternate',
+              easing: 'easeInOutQuad'
+            });
+          } else {
+            card.classList.add('disabled');
+            card.dataset.guessed = "true";
+          }
+        });
+      });
+
+      // Pulsante di reset per ricaricare la pagina
+      resetButton.addEventListener('click', () => {
+        location.reload();
+      });
+
+      // Funzione per applicare una domanda filtrante
+      window.askQuestion = function(attribute, friendlyName) {
+        activeFilters[attribute] = secretCharacter.attributes[attribute];
+        questionResultEl.innerHTML += `<div><strong>${friendlyName}:</strong> ${secretCharacter.attributes[attribute] ? "Sì" : "No"}</div>`;
+        updateCardsBasedOnFilters();
+      }
+
+      // Funzione per svuotare i filtri attivi
+      window.clearFilters = function() {
+        activeFilters = {};
+        questionResultEl.innerHTML = "";
+        document.querySelectorAll('.character-card').forEach(card => {
+          if (card.id === 'secretCard') return;
+          if (card.dataset.guessed !== "true") {
+            card.classList.remove('disabled');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

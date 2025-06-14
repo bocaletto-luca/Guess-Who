@@ -1,0 +1,56 @@
+body {
+      font-family: 'Roboto', sans-serif;
+      background: #f4f7f8;
+    }
+    /* Header styling */
+    header {
+      background: #007bff;
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+    /* Footer styling */
+    footer {
+      background: #343a40;
+      color: #fff;
+      text-align: center;
+      padding: 15px 0;
+      margin-top: 20px;
+    }
+    /* Card styling per i personaggi */
+    .character-card {
+      width: 100px;
+      margin: 5px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      text-align: center;
+      background: #fff;
+      padding: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .character-card:hover {
+      transform: scale(1.05);
+      border-color: #007bff;
+    }
+    .character-card.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    /* Container per la carta segreta e il tabellone */
+    #secretCardContainer {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    #board {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }

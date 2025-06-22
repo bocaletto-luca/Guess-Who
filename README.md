@@ -78,3 +78,5 @@ In this game, a secret character is chosen at random and the player must figure 
 2. Start Webserver Example Apache2 and open in web browser index.html
 
 #### Enjoy Game - By Bocaletto Luca
+
+#### License: GPLv3
